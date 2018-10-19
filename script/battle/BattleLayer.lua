@@ -140,7 +140,7 @@ local retryTimes = 0
 local m_talkCallbackFuncion
 local m_talkCallbackId
 local m_startEffectIsOver = false
-local group = ServerList.getSelectServerInfo().group
+local group = 40000001
 local uid   = UserModel.getUserUid()
 
 ---战车相关

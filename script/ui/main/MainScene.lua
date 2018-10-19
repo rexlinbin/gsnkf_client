@@ -78,21 +78,6 @@ local fnStaminaNumberChange = nil
 -- 注册时装强化界面删除方法
 local fnFashionEnhanceRemove = nil
 
--- web端的网页活动是否开启
-local _webActivityUrl = nil
-
--- 获得web端网页活动的Url地址
-local function getWebActivity()
-    if(Platform.getActiveInfo ~= nil)then
-        Platform.getActiveInfo(function( url )
-            _webActivityUrl = url
-        end)
-    end
-end
-
-function getWebActivityUrl()
-    return _webActivityUrl
-end
 
 -- 创建主城界面顶部
 local createTopLayer = function ()
@@ -393,32 +378,10 @@ function enter (...)
     --得到体力上限
     _nOriEnergyLimit = UserModel.getMaxExecutionNumber()
 
-    --支付相关，勿动！！！！！！
-    loadOther() 
-
-    -- 检查是否有web端运营活动
-    getWebActivity()
-
-    -- 需要在游戏里只调用一次的函数集合
-    callOnceInGame()
-
     -- 开启00:00：00 刷新的定时程序
     require "script/utils/TimerRequestCenter"
     TimerRequestCenter.startZeroRequest()
 
-    -- if(BTUtil:getPlatform() == kBT_PLATFORM_IOS ) then
-        -- 长时间未登录 本地通知 add by chengliang
-        require "script/utils/NotificationUtil"
-        NotificationUtil.addLongTimeNoSeeNotification()
-        if(DataCache.getSwitchNodeState(ksOlympic, false)) then
-            --添加擂台赛通知
-            NotificationUtil.addOlympicRegisterNotification() --擂台赛 报名
-            NotificationUtil.addOlympicFourNotification()     --擂台赛 4强    
-            NotificationUtil.addOlympicChampionNotification() --擂台赛 冠军
-        end
-    -- end
-
-    print("mainScene oN enter")
     -- 计算基础适配元素
     local standSize = CCSizeMake(640, 960)
 
@@ -1146,28 +1109,6 @@ function registerStaminaNumberChangeCallback( callFunc )
 end
 
 
---加载必要信息，包括支付信息，非常重要。
-function loadOther( ... )
-    require "script/ui/login/ServerList"
-    local serverInfo = ServerList.getSelectServerInfo()
-    print_t(serverInfo)
-    local pid = Platform.getPid()
-    -- local uid = UserModel.getUserUid()
-    
-    print("purchase_groupId", serverInfo.group)
-
-    CCUserDefault:sharedUserDefault():setStringForKey("purchase_pid", pid)
-    CCUserDefault:sharedUserDefault():setStringForKey("purchase_group", tostring(serverInfo.group))
-    CCUserDefault:sharedUserDefault():flush()
-
-    print("Platform.getCurrentPlatform()=", Platform.getCurrentPlatform() )
-    --支付监听器
-    if(Platform.getCurrentPlatform() == kPlatform_AppStore) then
-
-        Platform.addPurchaseListener()
-    end
-    
-end
 
 -- 注册时装强化界面删除方法
 function registerFashionEnhanceRemove( callFunc )
@@ -1214,22 +1155,6 @@ end
 -----------------------------------------------------------------------------------
 
 ----------------------------- 登录只调一次的函数集合方法 --------------------------
-function callOnceInGame( ... )
-    -- 军团按钮小红圈
-    require "script/ui/guild/GuildDataCache"
-    local isShow = GuildDataCache.isShowRedTip()
-    GuildDataCache.setIsShowRedTip( isShow )
-
-    -- print("start fight time:", os.clock(), os.time())
-    -- require "script/model/hero/FightForceModel"
-    -- print("fight force by lichenyang:", FightForceModel.getFightForce())
-    -- print("end fight time:", os.clock(), os.time())
-
-    --记录当前登录的Pid
-    CCUserDefault:sharedUserDefault():setStringForKey("user_pid", Platform.getPid())
-    CCUserDefault:sharedUserDefault():flush()
-
-end
 
 
 local function updateCheck( versionInfos )

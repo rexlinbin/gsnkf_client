@@ -20,7 +20,7 @@ local _tagOfNotice02Layer=200123
 -- 拉公告的服务器关键字
 local _serverKey
 
---local _noticeText
+--local _noticeText 
 
 local _webNoticeView = nil
 
@@ -58,7 +58,7 @@ function fnHandlerOfEnterGame(tag, obj)
         WebNoticeLayer.show()
         isFirst = false
     end
-    -- _noticeText = nil
+   -- _noticeText = nil
 end
 
 function deleteWebView( )
@@ -71,7 +71,7 @@ end
 
 -- 游戏公告单元格
 function createCell(tParam)
-    local tPreferredSize = {width=400, height=200}
+	local tPreferredSize = {width=400, height=200}
     local cs9Bg = CCScale9Sprite:create(CCRectMake(52, 44, 6, 4), "images/game_notice/cell_bg.png")
     local size = cs9Bg:getContentSize()
 
@@ -98,8 +98,8 @@ function createCell(tParam)
     end
 
     print("str  is ", str)
-    local clTextContent = CCLabelTTF:create(str, g_sFontName, 21, CCSizeMake(tPreferredSize.width-10, 0), kCCTextAlignmentLeft)
-    local colors = string.split(tParam[4], ",")
+	local clTextContent = CCLabelTTF:create(str, g_sFontName, 21, CCSizeMake(tPreferredSize.width-10, 0), kCCTextAlignmentLeft)
+	local colors = string.split(tParam[4], ",")
     clTextContent:setColor(ccc3(colors[1], colors[2], colors[3]))
     clTextContent:setAnchorPoint(ccp(0, 1))
     cs9Bg:addChild(clTextContent)
@@ -107,10 +107,10 @@ function createCell(tParam)
     local tTitleSize = csTitleBg:getContentSize()
     local tTextContentSize = clTextContent:getContentSize()
     local nBgHeight = tTitleSize.height + 6 + tTextContentSize.height + 6
-    if nBgHeight < 151 then
-        nBgHeight = 151
-    end
-    nBgHeight = nBgHeight
+	if nBgHeight < 151 then
+		nBgHeight = 151
+	end
+    nBgHeight = nBgHeight 
     cs9Bg:setContentSize(CCSizeMake(410, nBgHeight))
     csTitleBg:setPosition(ccp(cs9Bg:getContentSize().width/2, nBgHeight))
     clTextContent:setPosition(ccp(5, nBgHeight-tTitleSize.height))
@@ -136,7 +136,7 @@ end
 
 
 function showWebGameNotice( ... )
-
+    
 end
 
 function showGameNotice()
@@ -151,9 +151,9 @@ function showGameNotice()
     layer = CCLayerColor:create(ccc4(0,0,0,100))
     layer:registerScriptHandler(fnHandlerOfOnTouchLayer)
     runningScene:addChild(layer, 10001, _tagOfNotice02Layer)
+    
 
-
-    -- 层背景图
+-- 层背景图
     local csBg = CCSprite:create("images/game_notice/background.png")
     layer:addChild(csBg)
     csBg:setScale(g_fElementScaleRatio)
@@ -162,7 +162,7 @@ function showGameNotice()
 
     local x, y = csBg:getPosition()
     local contsize = csBg:getContentSize()
-
+    
 
     require "script/libs/LuaCC"
     local menu = CCMenu:create()
@@ -195,7 +195,7 @@ function showGameNotice()
         end
     end
 
-
+    
 
 end
 
@@ -203,7 +203,7 @@ end
 function getNoticeScrollView()
     local tArrContents = {}
     local tArrData = string.split(_noticeText, "======")
-    for i=1, #tArrData do
+    for i=1, #tArrData do 
         local colorAndText = string.split(tArrData[i], "|")
         print_t(colorAndText)
         if(table.count(colorAndText) == 5 )then
@@ -215,7 +215,7 @@ function getNoticeScrollView()
         end
     end
 
-    -- 灰色背景
+-- 灰色背景
     local preferredSize = CCSizeMake(443, 410) -- {width=562, height=666}
     local csvContent = CCScrollView:create()
     csvContent:setViewSize(CCSizeMake(preferredSize.width, preferredSize.height))
