@@ -140,7 +140,7 @@ local retryTimes = 0
 local m_talkCallbackFuncion
 local m_talkCallbackId
 local m_startEffectIsOver = false
-local group = ServerList.getSelectServerInfo().group
+local group = 40000001
 local uid   = UserModel.getUserUid()
 
 ---战车相关
@@ -5126,27 +5126,27 @@ function closeLayer()
     --     ----print("battle scene fight over")
     --     -- CCNotificationCenter:sharedNotificationCenter():postNotification("NC_FightOver")
     -- end
-    CCNotificationCenter:sharedNotificationCenter():postNotification("NC_FightOver")
+    --CCNotificationCenter:sharedNotificationCenter():postNotification("NC_FightOver")
     m_callbackFunc = nil
 
-    if(g_network_status==g_network_connected)then
-        if(m_isShowBattle == nil or m_isShowBattle == false)then
-            ---[[
-            if(m_copyType==1)then
-                RequestCenter.ncopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_base_id,m_level))
-            elseif(m_copyType==2)then
-                RequestCenter.ecopy_leaveCopy(nil,Network.argsHandler(m_copy_id))
-            elseif(m_copyType==4)then
-                RequestCenter.tower_leaveLevel(nil,Network.argsHandler(m_copy_id))
-            elseif(m_copyType==5)then
-                RequestCenter.tower_leaveLevel(nil,Network.argsHandler(m_copy_id))
-            elseif(m_copyType==6)then
-                RequestCenter.Hcopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_base_id,m_level))
-            else
-                RequestCenter.acopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_level))
-            end
-        end
-    end
+    --if(g_network_status==g_network_connected)then
+    --    if(m_isShowBattle == nil or m_isShowBattle == false)then
+    --        ---[[
+    --        if(m_copyType==1)then
+    --            RequestCenter.ncopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_base_id,m_level))
+    --        elseif(m_copyType==2)then
+    --            RequestCenter.ecopy_leaveCopy(nil,Network.argsHandler(m_copy_id))
+    --        elseif(m_copyType==4)then
+    --            RequestCenter.tower_leaveLevel(nil,Network.argsHandler(m_copy_id))
+    --        elseif(m_copyType==5)then
+    --            RequestCenter.tower_leaveLevel(nil,Network.argsHandler(m_copy_id))
+    --        elseif(m_copyType==6)then
+    --            RequestCenter.Hcopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_base_id,m_level))
+    --        else
+    --            RequestCenter.acopy_leaveBaseLevel(nil,Network.argsHandler(m_copy_id,m_level))
+    --        end
+    --    end
+    --end
 
     m_isShowBattle = nil
     m_afterBattleView = nil
@@ -8594,19 +8594,20 @@ function doBattle()
     end
 end
 
-function getFormationCallBack(cbFlag, dictData, bRet)
+function getFormationCallBack()
 
     require("script/utils/LuaUtil")
     ----print_table ("tb", dictData)
     --设置阵型
     require("script/model/user/FormationModel")
 
-    m_formation = {}
+    local formatInfo = CCUserDefault:sharedUserDefault():getStringForKey("format")
 
-    for k,v in pairs(dictData.ret) do
-        --local teamInfo = dictData.ret[i]
-        m_formation["" .. (tonumber(k)-1)] = tonumber(v)
-    end
+    local cjson = require "cjson"
+    local b_formatinfo = cjson.decode(formatInfo)
+
+
+    m_formation = b_formatinfo
 
     FormationModel.setFormationInfo(m_formation)
 
@@ -9136,13 +9137,7 @@ function enterBattle (copy_id,base_id,level,callbackFunc,copyType, p_isHiddenSki
     m_afterBattleView = nil
     m_heroDropArray = {}
 
-    local args = CCArray:create()
-    args:addObject(CCInteger:create(copy_id))
-
-    args:addObject(CCInteger:create(base_id))
-    args:addObject(CCInteger:create(level))
-
-    RequestCenter.getFormationInfo( BattleLayer.getFormationCallBack )
+    BattleLayer.getFormationCallBack()
 
 
     CCNotificationCenter:sharedNotificationCenter():postNotification("NC_BeginFight")
@@ -9209,19 +9204,19 @@ function enterBattle2 (copy_id,base_id,level)
 
     ----print("======copy_id,base_id,level=======",copy_id,base_id,level)
 
-    if(m_copyType==1)then
-        RequestCenter.ncopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, args)
-    elseif(m_copyType==2)then
-        RequestCenter.ecopy_enterCopy(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
-    elseif(m_copyType==4)then
-        RequestCenter.tower_enterLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
-    elseif(m_copyType==5)then
-        RequestCenter.tower_enterSpecailLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
-    elseif(m_copyType==6)then
-        RequestCenter.Hcopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, args)
-    else
-        RequestCenter.acopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id,m_base_id))
-    end
+    --if(m_copyType==1)then
+    --    RequestCenter.ncopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, args)
+    --elseif(m_copyType==2)then
+    --    RequestCenter.ecopy_enterCopy(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
+    --elseif(m_copyType==4)then
+    --    RequestCenter.tower_enterLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
+    --elseif(m_copyType==5)then
+    --    RequestCenter.tower_enterSpecailLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id))
+    --elseif(m_copyType==6)then
+    --    RequestCenter.Hcopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, args)
+    --else
+    --    RequestCenter.acopy_enterBaseLevel(BattleLayer.enterBaseLvCallback, Network.argsHandler(m_copy_id,m_base_id))
+    --end
     --RequestCenter.enderBaseLv(BattleLayer.enterBaseLvCallback, args)
     --]]
     -- 发送进入副本请求结束

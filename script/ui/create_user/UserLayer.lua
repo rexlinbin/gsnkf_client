@@ -243,17 +243,6 @@ function createUserLayer( )
 	_newUserLayer:addChild(selectSprite,200)
 	setAdaptNode(selectSprite)
 
-	-- vip 继承提示
-	local hasVip, vipLv = UserHandler.hasVip()
-	if( hasVip==true and vipLv>0)then
-		require "script/model/utils/UserUtil"
-		local vipTipSprite = UserUtil.getVipTipSpriteByVipNum( vipLv )
-	    vipTipSprite:setAnchorPoint(ccp(0.5,0.5))
-	    vipTipSprite:setPosition(_newUserLayer:getContentSize().width*0.5, _newUserLayer:getContentSize().height*0.85)
-	    _newUserLayer:addChild(vipTipSprite,200)
-	    vipTipSprite:setScale(g_fElementScaleRatio)
-	end
-
 	-- 站台
 	_userStage = CCSprite:create(IMG_PATH .. "stage.png")
 	_userStage:setPosition(ccps(0.5,240/960))

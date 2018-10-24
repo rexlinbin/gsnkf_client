@@ -15,8 +15,6 @@ local _pid
 -- g_debug_mode = true
 -- _debug = g_debug_mode
 _isAppStore = false
-_isZYXSdk = false
-_isDNYSdk = false
 _appVersion = NSBundleInfo:getAppVersion()
 local protocol
 local name = nil
@@ -31,18 +29,11 @@ isGiftBagShow  = true
 isChangeAccount = false
 
 function isPlatform( ... )
-    return BTUtil:getPlStatus()
+    return true
 end
 
 function isAppStore( ... )
     return _isAppStore
-end
-function isZYXSdk( ... )
-    return _isZYXSdk
-end
-
-function isDNYSdk( ... )
-    return _isDNYSdk
 end
 
 function isDebug( ... )
@@ -67,13 +58,7 @@ function getPlatformFlag( ... )
 end
 -- 初始化平台相关SDK
 function initSDK()
-    if(isPlatform() == false)then
-        require "script/config/config_debug"
-        return
-    end
     protocol = PluginManager:getInstance():loadPlugin()
-    registerCrashHandler()
-    registerLoginHandlers()
     local platformName = protocol:callStringFuncWithParam("getPlatformName",nil)
     print("platformName is",platformName);
     if(platformName == "IOS_91")then
@@ -394,43 +379,7 @@ function isLogin( ... )
 end
 
 _loginBackCall = nil
-function registerLoginHandlers( ... )
-  Platform.registerLoginScriptHandler(function ( dict )
-    require "script/utils/LuaUtil"
-    print_t("login back",dict)
-    local loginState = tonumber(dict.state)
-    local session_id = dict.sid
-    print("loginState =",loginState,"session_id=",session_id)
-    print(type(loginState))
-    print("loginState =" .. loginState)
-    if Platform.isDNYSdk() then
-      if loginState == 0 then
-        local userName = dict.userName
-        local userId = dict.userId
-        require "script/ui/login/DNY_english/DnyLoginLayer"
-        DnyLoginLayer.loginSeccessCallBack(session_id,userId,userName)
-      elseif loginState == -1 then
-        require "script/ui/login/DNY_english/DnyLoginLayer"
-        DnyLoginLayer.loginFailedCallBack(tostring(dict.msg))
-        print("loginFailed:",dict.msg)
-      else
-        print("loginFailed:",dict.msg)
-      end
-    --为了兼容英文1.1.8版本，先保留，换底包后可删除上面东南亚部分
-    else
-      if(loginState == 0) then
-          print("platform sdk 登陆成功")
-          printB("..................Platform.getPidBySessionId...................001")
-          Platform.sdkLoginInfo=dict
-          Platform.getPidBySessionId(session_id)
-          Platform.showToolBar()
-      else
-        print("登陆失败")
-        return;
-      end
-    end
-  end)
-end
+
 
 --登陆
 function login( loginBackCall )
@@ -1524,46 +1473,6 @@ function openUrl( url )
         dict:setObject(CCString:create(url),"url")
         protocol:callOCFunctionWithName_oneParam_noBack("openUrl",dict)
     end
-end
-
-function registerCrashHandler( ... )
-    print("registerCrashHandler")
-    protocol:registerScriptHandlers("handleCrash",function( param )
-        print("handleCrash")
-        print("param",param)
-        -- local cjson = require "cjson"
-        -- local dict = cjson.decode(param)
-        local param = ""
-        local dumpPath=""
-        param = param .. "&pid=" .. (_pid or 0)
-        param = param .. "&env=lua"
-        param = param .. "&gn=sanguo"
-        param = param .. "&os="..getOS()
-        param = param .. "&pl="..getPlName()
-
-        local serverInfo = ServerList.getSelectServerInfo()
-        param = param .. "&server="..serverInfo.host .. ":" .. serverInfo.port
-        param = param .. "&server_group="..serverInfo.group
-        -- for k,v in pairs(dict) do
-        --     if(k == "functionName")then
-
-        --     else
-        --         print(k .. "=" .. v)
-        --         param = param .. "&" .. k .. "=" .. v
-        --     end
-        -- end
-
-        local url = "http://debug.zuiyouxi.com:17801/index.php?" .. param .. "&lua_traceback=" ..debug.traceback() .. "&lua_tracebackex=" .. tracebackex()
-        url1 = string.gsub(url,"\n","<br>")
-        url = nil
-        url2 = string.gsub(url1,"\r","<br>")
-        url1 = nil
-
-        print("url=",url2)
-        local dict = CCDictionary:create()
-        dict:setObject(CCString:create(url2),"url")
-        protocol:callOCFunctionWithName_oneParam_noBack("sendToServer",dict)
-    end)
 end
 
 function tracebackex()  

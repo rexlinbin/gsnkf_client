@@ -14,7 +14,7 @@ local observers = nil
 --[[
     uid:用户id,
     uname:用户名字,
-    utid:用户模版id,
+    utid:用户性别id,
     htid:主角武将的htid
     level:玩家级别
     execution:当前行动力,
@@ -63,10 +63,6 @@ function setUserInfo(pUserInfo)
     else
         --刷新userInfo
         table.paste(_userInfo, pUserInfo)
-    end
-    if _userInfo and _userInfo.unlockPay then
-        print("_userInfo.unlockPay",_userInfo.unlockPay)
-        Platform.fnLockPay(_userInfo.unlockPay)
     end
 end
 

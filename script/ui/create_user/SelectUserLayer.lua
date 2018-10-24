@@ -17,13 +17,13 @@ local _selectSprite				-- 选中的sprite
 local _nameEditBox				-- 名字的editBox
 local _curName					-- 当前用户的选中的名字
 local _curIndex					-- 当前第n个名字
-local _UserName					-- 用户的姓名
+local _UserName				-- 用户的姓名
 local _createUserBtn
 local function init()
 	_selectLayer = nil
 	_selectBg = nil
 	_utid = 2
-	_UserName = nil
+	_UserName = {"","冷月灬雪魂","冰雪灬冥月","血月灬魔魂"}
 	_selectSprite = nil
 	_nameEditBox = nil
 	_curIndex = 0
@@ -73,28 +73,12 @@ local function createNameBox( )
 
 end
 
--- 获取网络请求的网络回调函数
-local function randomNameAction(cbFlag, dictData, bRet )
-	if(dictData.err ~= "ok")then
-		return
-	end
-	_UserName = dictData.ret
-	if(table.isEmpty(_UserName)) then
-		AnimationTip.showTip(GetLocalizeStringBy("key_2684"))
-		return
-	end
-	_curName = _UserName[1].name
-	_curIndex = 1
-	_nameEditBox:setText("" .. _curName)	
-end
 
--- 获取随即名字的网络请求
-local function getRandomName( )	
-	local args = CCArray:create()
-	args:addObject(CCInteger:create(20))
-	args:addObject(CCInteger:create(tonumber(_utid) -1 ))
-	require "script/network/Network"
-	RequestCenter.user_getRandomName(randomNameAction, args)
+-- 获取随即名字
+local function getRandomName( )
+	_curName = _UserName[1]
+	_curIndex = 1
+	_nameEditBox:setText("" .. _curName)
 end
 
 -- 得到用户的性别：用户模版id 1:女 2:男 
@@ -102,28 +86,7 @@ function getUserSex( )
 	return _utid
 end
 
--- 创建角色按钮的网络回调函数
-local function createuserAction(cbFlag, dictData, bRet )
-	if(dictData.err ~= "ok")then
-		return
-	end
-	require "script/ui/tip/AnimationTip"
-	_createUserBtn:setEnabled(true)
-	if(dictData.ret == "ok") then
-		AnimationTip.showTip(GetLocalizeStringBy("key_1789"))
-		Network.rpc(UserHandler.fnGetUsers, "user.getUsers", "user.getUsers", nil, true)
-		return
-	elseif(dictData.ret == "invalid_char") then
-		AnimationTip.showTip(GetLocalizeStringBy("key_2458"))
-		return
-	elseif(dictData.ret == "sensitive_word") then
-		AnimationTip.showTip(GetLocalizeStringBy("key_2458"))
-		return 
-	elseif(dictData.ret == "name_used") then
-		AnimationTip.showTip(GetLocalizeStringBy("key_2547"))
-		return
-	end
-end
+
 
 --  汉字的utf8 转换，
 local function getStringLength( str)
@@ -145,41 +108,78 @@ end
 -- 创建角色按钮的回调函数
 local function createUserCb( tag,item)
 	_curName = _nameEditBox:getText()
-	local args = CCArray:create()
-	args:addObject(CCInteger:create(_utid))
-	args:addObject(CCString:create("" .. _curName))
+	local user = {}
+	user["uid"] = 10001
+	user["uname"] = _curName
+	user["utid"] = _utid
+	if(_utid ==1) then  -- 女主
+		user["htid"] = 20002
+	elseif(_utid ==2 ) then
+		user["htid"] = 20001
+	end
+
+	user["hid"] = 10010001
+	user["level"] = 1
+	user["execution"] = 500
+	user["execution_time"] = os.time()
+	user["execution_max_num"] = 150
+	user["buy_execution_time"] = 0
+	user["buy_execution_accum"] = 0
+	user["vip"] = 0
+	user["silver_num"] = 0
+	user["gold_num"] = 0
+	user["exp_num"] = 0
+	user["soul_num"] = 0
+	user["wm_num"] = 0
+	user["stamina"] = 20
+	user["stamina_time"] = os.time()
+	user["stamina_max_num"] = 20
+	user["buy_stamina_time"] = 0
+	user["buy_stamina_accum"] = 0
+	user["fight_cdtime"] = 0
+	user["ban_chat_time"] = 0
+	user["max_level"] = 200
+	user["hero_limit"] = 100
+	user["charge_gold"] = 0
+	user["jewel_num"] = 0
+	user["prestige_num"] = 0
+	user["figure"] = 0
+	user["title"] = 0
+	user["fight_force"] = 0
+	user["dayOffset"] = 10001
+	user["fame_num"] = 0
+	user["book_num"] = 0
+	user["fs_exp"] = 0
+
+	local formatInfo = {}
+	formatInfo['1'] = 10010001
+
 	if(_curName== "") then
 		AnimationTip.showTip(GetLocalizeStringBy("key_1706") )
 		return
-	--added by Zhang Zihang
-	elseif (Platform.getPlatformFlag() == "ios_thailand" or Platform.getPlatformFlag() == "Android_taiguo" ) then
-	 	--要求是12个泰字，可是咱们这里判断太简陋了，所以白老师让扩大以规避
-	 	if (getStringLength(_curName)>24) then
-	 		AnimationTip.showTip(GetLocalizeStringBy("key_2250"))
-	 		return
-	 	end
 	else
 		if (getStringLength(_curName)>10) then
 			AnimationTip.showTip(GetLocalizeStringBy("key_2250"))
 	 		return
 		end
 	end
-	LoginScene.setReconnStatus(false)
 	item:setEnabled(false)
-	RequestCenter.user_createUser(createuserAction,args)
+	local cjson = require "cjson"
+	local b_userinfo = cjson.encode(user)
+	local b_formatinfo = cjson.encode(formatInfo)
+	CCUserDefault:sharedUserDefault():setStringForKey("user",b_userinfo)
+	CCUserDefault:sharedUserDefault():setStringForKey("format",b_formatinfo)
+	CCUserDefault:sharedUserDefault():flush()
+	require "script/network/user/UserHandler"
+	UserHandler.setUserInfo(user)
 end 
 
 -- 置筛子的回调函数
 local function sieveBtnCb( )
-	if(table.isEmpty(_UserName)) then
-		AnimationTip.showTip(GetLocalizeStringBy("key_2684"))
-		return
-	end
-
 	_curIndex = _curIndex + 1
-	if(_curIndex <= 20 ) then
-		_nameEditBox:setText("" .. _UserName[_curIndex].name)
-	else 
+	if(_curIndex <= 3 ) then
+		_nameEditBox:setText("" .. _UserName[_curIndex])
+	else
 		getRandomName()
 	end
 end
@@ -196,17 +196,6 @@ function createSelectLayer( utid )
 	_selectBg:setAnchorPoint(ccp(0.5,0.5))
 	_selectLayer:addChild(_selectBg)
 	setAllScreenNode(_selectBg)
-
-	-- vip 继承提示
-	local hasVip, vipLv = UserHandler.hasVip()
-	if( hasVip==true and vipLv>0)then
-		require "script/model/utils/UserUtil"
-		local vipTipSprite = UserUtil.getVipTipSpriteByVipNum( vipLv )
-	    vipTipSprite:setAnchorPoint(ccp(0.5, 0.5))
-	    vipTipSprite:setPosition(_selectLayer:getContentSize().width*0.5, _selectLayer:getContentSize().height*0.85)
-	    _selectLayer:addChild(vipTipSprite,200)
-	    vipTipSprite:setScale(g_fElementScaleRatio)
-	end
 
 	-- 站台
 	local userStage = CCSprite:create(IMG_PATH .. "stage.png")
@@ -241,10 +230,10 @@ function createSelectLayer( utid )
 	setAdaptNode(sieveBtn)
 	menu:addChild(sieveBtn)
 
-	-- 获得随即名字
-	getRandomName()
 	createNameBox()
 
+	-- 获得随即名字
+	getRandomName()
 
 
 
